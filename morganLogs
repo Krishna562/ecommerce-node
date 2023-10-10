@@ -1,0 +1,6 @@
+::1 - - [08/Oct/2023:11:27:57 +0000] "GET /?page=1 HTTP/1.1" 200 - "http://localhost:3000/orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0"
+::1 - - [08/Oct/2023:11:27:57 +0000] "GET /favicon.ico HTTP/1.1" 404 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0"
+::1 - - [08/Oct/2023:11:28:26 +0000] "GET /add-to-cart/6516726c58ed40f74002e6dc?_csrf=As9NHfDY-fcKDnQJYPm_phaVXuHs19p6pJvg HTTP/1.1" 302 54 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0"
+::1 - - [08/Oct/2023:11:28:26 +0000] "GET /cart HTTP/1.1" 200 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0"
+::1 - - [08/Oct/2023:11:28:34 +0000] "POST /remove-from-cart/6516726c58ed40f74002e6dc HTTP/1.1" 302 54 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0"
+::1 - - [08/Oct/2023:11:28:34 +0000] "GET /cart HTTP/1.1" 200 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0"

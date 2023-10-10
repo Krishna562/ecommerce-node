@@ -1,0 +1,57 @@
+<%- include("../includes/start.ejs") %>
+<body>
+  <%- include("../includes/navigation.ejs") %>
+  <main class="main">
+    <% if(error){ %>
+      <div class="user-message user-message--error"><%= error %></div>
+    <% } %>
+    <section class="main__section">
+      <% let editProduct = { name: previousName, price: previousPrice} %>
+      <% if (editing && !error) { %> 
+        <% const { name, price, _id} = product %>
+        <% editProduct = {name, price} %> 
+      <% }%>
+      <% const {name, price} = editProduct %>
+
+      <% const btnTxt = editing ? "Edit" : "Add" %>
+
+      <% const formAction = editing ? `/admin/edit/${product._id}` : "/admin/products" %>
+
+      <form class="main__form" action="<%= formAction %>" method="post" enctype="multipart/form-data">
+        <label for="product name" class="main__form__label"
+          >Product Name :
+        </label>
+        <input
+          type="text"
+          name="name"
+          class="main__form__input <%= errorCause.includes('name') ? 'errorInput' : null %>"
+          value="<%= name %>"
+          placeholder="enter the name of your product"
+        />
+        <label for="image" class="main__form__label"
+          >Image :
+        </label>
+        <input
+          type="file"
+          name="image"
+          id="image"
+        />
+        <label for="product price" class="main__form__label"
+          >Product Price :
+        </label>
+        <input
+          type="number"
+          name="price"
+          class="main__form__input <%= errorCause.includes('name') ? 'errorInput' : null %>"
+          value="<%= price %>"
+          placeholder="specify a price for your product"
+        />
+        <input type="text" name="_csrf" value="<%= csrfToken %>" class="offPage">
+        <button type="submit" class="main__form__btn">
+          <%= btnTxt %>
+        </button>
+      </form>
+    </section>
+  </main>
+</body>
+<%- include("../includes/end.ejs") %>
