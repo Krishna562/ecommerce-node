@@ -3,6 +3,7 @@ const { validationResult } = require("express-validator");
 const deleteFile = require("../utils/deleteFile");
 const absolutePath = require("../utils/path");
 const path = require("path");
+const fs = require("fs");
 
 // GET ADMIN PRODUCTS
 

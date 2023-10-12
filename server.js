@@ -11,7 +11,7 @@ const flash = require("connect-flash");
 const multer = require("multer");
 require("dotenv").config();
 const morgan = require("morgan");
-const helmet = require("helmet");
+// const helmet = require("helmet");
 const compression = require("compression");
 const fs = require("fs");
 
@@ -76,7 +76,7 @@ app.use(
 app.use(csrfProtection);
 
 app.use(compression());
-app.use(helmet());
+// app.use(helmet());
 
 // Log access folder initialization
 const logAccessStream = fs.createWriteStream(
