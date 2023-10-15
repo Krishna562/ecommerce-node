@@ -128,7 +128,7 @@ exports.postResetPassword = (req, res) => {
           subject: "Password reset request",
           html: `
             <p>You (${email}) requested for a password change.</p>
-            <p>Click on this <a href="http://localhost:3000/create-new-password/${token}">link</a> to set a new password.</p>
+            <p>Click on this <a href="https://ecommerce-node-cp25.onrender.com/create-new-password/${token}">link</a> to set a new password.</p>
           `,
         });
         res.redirect("/");
