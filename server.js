@@ -31,6 +31,7 @@ const errController = require("./controllers/error");
 const User = require("./models/user");
 
 const MONGODBCONNECT_URI = `${process.env.MONGODB_URI}`;
+console.log(MONGODBCONNECT_URI);
 
 const store = new mongoDbSession({
   uri: MONGODBCONNECT_URI,
