@@ -109,6 +109,7 @@ exports.postProducts = async (req, res) => {
 // EDIT PRODUCTS
 
 exports.postEditProduct = async (req, res, next) => {
+  console.log("from edit products");
   const isEditing = req.query.editing === "true" ? true : false;
   const _id = req.params._id;
   const currentUser = req.user;
@@ -182,6 +183,7 @@ exports.postEdit = async (req, res) => {
 // DELETE PRODUCTS
 
 exports.deleteProduct = async (req, res) => {
+  console.log("from delete products");
   const _id = req.params.productId;
   const currentUser = req.user;
   const productToDelete = await Product.findById(_id);
