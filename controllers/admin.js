@@ -4,6 +4,7 @@ const deleteFile = require("../utils/deleteFile");
 const absolutePath = require("../utils/path");
 const path = require("path");
 const fs = require("fs");
+const cloudinary = require("cloudinary");
 
 // GET ADMIN PRODUCTS
 
@@ -64,12 +65,31 @@ exports.postProducts = async (req, res) => {
         errorCause: errorCause,
       });
     } else {
-      const imagePath = "/" + image.path;
+      // UPLOADING USING CLOUDINARY
+
+      const cloudinaryUploadUrl = `${process.env.ONRENDER_API_URL}/images/${image.originalName}`;
+      let cloudinaryUploadResult;
+      if (process.env.NODE_ENV === "production") {
+        try {
+          cloudinaryUploadResult = await cloudinary.v2.uploader.upload(
+            cloudinaryUploadUrl
+          );
+        } catch (err) {
+          next(err);
+        }
+      }
+
+      const imagePath =
+        process.env.NODE_ENV === "production"
+          ? cloudinaryUploadResult.secure_url
+          : "/" + image.path;
+
       try {
         const newProduct = new Product({
           name,
           price,
           image: imagePath,
+          prodImgId: cloudinaryUploadResult.public_id,
           userId: req.user._id,
         });
         await newProduct.save();
@@ -137,9 +157,17 @@ exports.postEdit = async (req, res) => {
     productToEdit.name = name;
     productToEdit.price = price;
     if (image) {
-      const filePath = path.join(absolutePath, productToEdit.image);
-      deleteFile(filePath);
-      productToEdit.image = "/" + image.path;
+      const cloudinaryUploadUrl = `${process.env.ONRENDER_API_URL}/images/${image.originalName}`;
+      if (process.env.NODE_ENV === "production") {
+        const result = await cloudinary.v2.uploader.upload(cloudinaryUploadUrl);
+        productToEdit.image = result.secure_url;
+        productToEdit.prodImgId = result.public_id;
+        await cloudinary.v2.api.delete_resources([image.prodImgId]);
+      } else {
+        const filePath = path.join(absolutePath, productToEdit.image);
+        deleteFile(filePath);
+        productToEdit.image = "/" + image.path;
+      }
     }
     await productToEdit.save();
     res.redirect("/admin/admin-products");
@@ -159,8 +187,12 @@ exports.deleteProduct = async (req, res) => {
     req.flash("err", "Only the user who created the product can delete it");
     res.status(500).json({ message: "Deleting product failed !" });
   } else {
-    const filePath = path.join(absolutePath, productToDelete.image);
-    deleteFile(filePath);
+    if (process.env.NODE_ENV === "production") {
+      await cloudinary.v2.api.delete_resources([productToDelete.prodImgId]);
+    } else {
+      const filePath = path.join(absolutePath, productToDelete.image);
+      deleteFile(filePath);
+    }
     await Product.findByIdAndRemove(_id);
     await req.user.deleteCartProduct(_id);
     res.status(200).json({ message: "Deleting product suceeded !" });

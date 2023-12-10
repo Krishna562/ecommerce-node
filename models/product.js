@@ -16,6 +16,10 @@ const product = new Schema({
     type: String,
     required: true,
   },
+  prodImgId: {
+    type: String,
+    require: true,
+  },
   userId: {
     type: Schema.Types.ObjectId,
     required: true,
