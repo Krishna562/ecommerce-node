@@ -1,5 +1,5 @@
 const path = require("path");
 
-const getAbsolutePath = path.dirname(require.main.filename);
+const getAbsolutePath = path.resolve();
 
 module.exports = getAbsolutePath;
