@@ -75,6 +75,7 @@ exports.postProducts = async (req, res) => {
             cloudinaryUploadUrl
           );
         } catch (err) {
+          console.log(err);
           next(err);
         }
       }
@@ -89,12 +90,16 @@ exports.postProducts = async (req, res) => {
           name,
           price,
           image: imagePath,
-          prodImgId: cloudinaryUploadResult.public_id,
+          prodImgId:
+            process.env.NODE_ENV === "production"
+              ? cloudinaryUploadResult.public_id
+              : "0",
           userId: req.user._id,
         });
         await newProduct.save();
         res.redirect("/admin/admin-products");
       } catch (err) {
+        console.log(err);
         res.redirect("/500");
       }
     }
