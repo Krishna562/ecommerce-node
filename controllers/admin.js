@@ -75,8 +75,7 @@ exports.postProducts = async (req, res) => {
             cloudinaryUploadUrl
           );
         } catch (err) {
-          console.log(err);
-          // next(err);
+          next(err);
         }
       }
 
@@ -183,10 +182,9 @@ exports.postEdit = async (req, res) => {
 // DELETE PRODUCTS
 
 exports.deleteProduct = async (req, res) => {
-  console.log("from delete products");
-  const _id = req.params.productId;
+  const prodId = req.params.productId;
   const currentUser = req.user;
-  const productToDelete = await Product.findById(_id);
+  const productToDelete = await Product.findById(prodId);
   const isAuthor = currentUser._id.equals(productToDelete.userId)
     ? true
     : false;
@@ -200,8 +198,8 @@ exports.deleteProduct = async (req, res) => {
       const filePath = path.join(absolutePath, productToDelete.image);
       deleteFile(filePath);
     }
-    await Product.findByIdAndRemove(_id);
-    await req.user.deleteCartProduct(_id);
+    await Product.findByIdAndDelete(prodId);
+    await req.user.deleteCartProduct(prodId);
     res.status(200).json({ message: "Deleting product suceeded !" });
   }
 };
