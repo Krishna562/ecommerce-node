@@ -84,6 +84,10 @@ exports.postProducts = async (req, res) => {
           ? cloudinaryUploadResult.secure_url
           : "/" + image.path;
 
+      console.log(imagePath);
+      console.log(cloudinaryUploadUrl);
+      console.log(cloudinaryUploadResult);
+
       try {
         const newProduct = new Product({
           name,
