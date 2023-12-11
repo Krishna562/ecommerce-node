@@ -39,7 +39,6 @@ exports.getAddProducts = (req, res) => {
 };
 
 exports.postProducts = async (req, res) => {
-  console.log("from post products");
   const { name, price } = req.body;
   const errors = validationResult(req).array();
   const image = req.file;
@@ -68,7 +67,7 @@ exports.postProducts = async (req, res) => {
     } else {
       // UPLOADING USING CLOUDINARY
 
-      const cloudinaryUploadUrl = `${process.env.ONRENDER_API_URL}/images/${image.originalName}`;
+      const cloudinaryUploadUrl = `${process.env.ONRENDER_API_URL}/images/${image.filename}`;
       let cloudinaryUploadResult;
       if (process.env.NODE_ENV === "production") {
         try {
