@@ -84,10 +84,6 @@ exports.postProducts = async (req, res) => {
           ? cloudinaryUploadResult.secure_url
           : "/" + image.path;
 
-      console.log(imagePath);
-      console.log(cloudinaryUploadUrl);
-      console.log(cloudinaryUploadResult);
-
       try {
         const newProduct = new Product({
           name,
@@ -102,8 +98,7 @@ exports.postProducts = async (req, res) => {
         await newProduct.save();
         res.redirect("/admin/admin-products");
       } catch (err) {
-        console.log(err);
-        res.redirect("/500");
+        next(err);
       }
     }
   }
@@ -166,12 +161,18 @@ exports.postEdit = async (req, res) => {
     productToEdit.name = name;
     productToEdit.price = price;
     if (image) {
-      const cloudinaryUploadUrl = `${process.env.ONRENDER_API_URL}/images/${image.originalName}`;
+      const cloudinaryUploadUrl = `${process.env.ONRENDER_API_URL}/images/${image.filename}`;
       if (process.env.NODE_ENV === "production") {
-        const result = await cloudinary.v2.uploader.upload(cloudinaryUploadUrl);
-        productToEdit.image = result.secure_url;
-        productToEdit.prodImgId = result.public_id;
-        await cloudinary.v2.api.delete_resources([image.prodImgId]);
+        try {
+          const result = await cloudinary.v2.uploader.upload(
+            cloudinaryUploadUrl
+          );
+          await cloudinary.v2.api.delete_resources([productToEdit.prodImgId]);
+          productToEdit.image = result.secure_url;
+          productToEdit.prodImgId = result.public_id;
+        } catch (err) {
+          next(err);
+        }
       } else {
         const filePath = path.join(absolutePath, productToEdit.image);
         deleteFile(filePath);
