@@ -1,7 +1,0 @@
-<footer class="pagination">
-    <% for (let i = 0; i < noOfPages; i++) { %>
-      <% const pageNo = i + 1 %>
-      <% const className = pageIndex == pageNo ? 'activePage' : null %>
-      <a href="?page=<%= pageNo %>" class="pagination__a <%= className %>"><%= pageNo %></a>
-    <% } %>
-  </footer>

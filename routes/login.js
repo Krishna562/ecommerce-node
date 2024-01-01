@@ -4,8 +4,8 @@ const loginController = require("../controllers/login");
 const { check, body } = require("express-validator");
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
+const isLoggedIn = require("../middleware/isLoggedIn");
 
-router.get("/login", loginController.getLogin);
 router.post(
   "/login",
   [
@@ -21,18 +21,21 @@ router.post(
       }),
     body("password").custom(async (input, { req }) => {
       const user = await User.findOne({ email: req.body.email });
-      const isCorrectPassword = await bcrypt.compare(input, user.password);
-      if (!isCorrectPassword) {
-        throw new Error("Invalid password");
-      } else {
-        return true;
+      if (user) {
+        const isCorrectPassword = await bcrypt.compare(input, user.password);
+        if (!isCorrectPassword) {
+          throw new Error("Incorrect password");
+        } else {
+          return true;
+        }
       }
     }),
   ],
   loginController.postLogin
 );
+
 router.post("/logout", loginController.postLogout);
-router.get("/signup", loginController.getSignUp);
+
 router.post(
   "/signup",
   [
@@ -64,9 +67,45 @@ router.post(
   ],
   loginController.postSignUp
 );
-router.get("/reset-password", loginController.getResetPassword);
-router.post("/reset-password", loginController.postResetPassword);
-router.get("/create-new-password/:token", loginController.getCreateNewPassword);
-router.post("/create-new-password", loginController.postCreateNewPassword);
+
+router.get("/isLoggedIn", isLoggedIn, loginController.checkAuthStatus);
+
+router.post(
+  "/pass-reset-req",
+  [
+    body("email")
+      .trim()
+      .normalizeEmail()
+      .notEmpty()
+      .custom(async (email) => {
+        const user = await User.findOne({ email });
+        if (!user) {
+          throw new Error("Email is not registered");
+        } else {
+          return true;
+        }
+      }),
+  ],
+  loginController.sendPassResetReq
+);
+
+// VERIFY RESET PASSWORD TOKEN
+router.get(
+  "/verify-pass-reset-token/:token",
+  loginController.verifyPassResetToken
+);
+router.patch(
+  "/reset-password",
+  [
+    body("confirmNewPassword").custom((confirmPass, { req }) => {
+      if (confirmPass === req.body.newPassword) {
+        return true;
+      } else {
+        throw new Error("Passwords do not match");
+      }
+    }),
+  ],
+  loginController.resetPassword
+);
 
 module.exports = router;

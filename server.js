@@ -1,20 +1,15 @@
 const express = require("express");
-const bodyParser = require("body-parser");
 const app = express();
 const path = require("path");
-const session = require("express-session");
 const mongoose = require("mongoose");
-const mongoDbSession = require("connect-mongodb-session")(session);
-const csrf = require("csurf");
-const csrfProtection = csrf();
 const flash = require("connect-flash");
 const multer = require("multer");
 require("dotenv").config();
-const morgan = require("morgan");
-// const helmet = require("helmet");
+const helmet = require("helmet");
 const compression = require("compression");
-const fs = require("fs");
 const cloudinary = require("cloudinary");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -22,27 +17,27 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+app.use(
+  cors({
+    origin: [process.env.ONRENDER_FRONTEND_URL, process.env.FRONTEND_URL],
+    credentials: true,
+  })
+);
+
 // MY IMPORTS
 const admin = require("./routes/admin");
 const shopRoute = require("./routes/shop");
 const loginRoute = require("./routes/login");
 const rootDir = require("./utils/path");
-const errController = require("./controllers/error");
-const User = require("./models/user");
 
 const MONGODBCONNECT_URI = `${process.env.MONGODB_URI}`;
-
-const store = new mongoDbSession({
-  uri: MONGODBCONNECT_URI,
-  collection: "sessions",
-});
 
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "images");
   },
   filename: (req, file, cb) => {
-    cb(null, file.originalname);
+    cb(null, `${Date.now()}-${file.originalname}`);
   },
 });
 
@@ -59,53 +54,20 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-app.set("view engine", "ejs");
-app.set("views", "views");
-
-app.use(express.static(path.join(rootDir, "public")));
 app.use("/images", express.static(path.join(rootDir, "images")));
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.json());
 
 app.use(
-  multer({ storage: fileStorage, fileFilter: fileFilter }).single("image")
+  multer({ storage: fileStorage, fileFilter: fileFilter }).array("imgFiles", 3)
 );
-
-app.use(
-  session({
-    secret: "secret?lol",
-    saveUninitialized: false,
-    resave: false,
-    store: store,
-  })
-);
-
-app.use(csrfProtection);
 
 app.use(compression());
-// app.use(helmet());
-
-// Log access folder initialization
-const logAccessStream = fs.createWriteStream(
-  path.join(__dirname, "morganLogs")
-);
-app.use(morgan("combined", { stream: logAccessStream }));
-
-app.use((req, res, next) => {
-  res.locals.isAuthenticated = req.session.loggedIn;
-  res.locals.csrfToken = req.csrfToken();
-  next();
-});
-
-app.use(async (req, res, next) => {
-  if (req.session.user) {
-    const user = await User.findById(req.session.user._id);
-    req.user = user;
-  }
-  next();
-});
+app.use(helmet());
 
 app.use(flash());
+
+app.use(cookieParser());
 
 app.use("/admin", admin);
 
@@ -113,13 +75,12 @@ app.use(shopRoute);
 
 app.use(loginRoute);
 
-app.use("/500", errController.get500Page);
-
-app.use("/", errController.get404Page);
-
 app.use((error, req, res, next) => {
   console.log(error);
-  res.redirect("/500");
+  const statusCode = error.statusCode || 500;
+  res.status(statusCode).json({
+    error: error.message,
+  });
 });
 
 mongoose

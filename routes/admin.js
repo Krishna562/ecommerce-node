@@ -2,50 +2,25 @@ const express = require("express");
 const router = express.Router();
 
 const adminController = require("../controllers/admin");
-const isAuthCheck = require("../middleware/isAuth");
+const isLoggedIn = require("../middleware/isLoggedIn");
 
-const { body } = require("express-validator");
+// ADD A PRODUCT
+router.post("/add-product", isLoggedIn, adminController.addProduct);
 
-router.get("/admin-products", isAuthCheck, adminController.getAdminProducts);
+// EDIT A PRODUCT
+router.patch("/edit-product/:productId", isLoggedIn, adminController.postEdit);
 
-router.get("/add-products", isAuthCheck, adminController.getAddProducts);
-router.post(
-  "/products",
-  isAuthCheck,
-  [
-    body("name")
-      .isString()
-      .isLength({ min: 3 })
-      .withMessage("Name must contain alteast 3 characters")
-      .trim(),
-    body("price").isFloat().trim(),
-  ],
-  adminController.postProducts
-);
-
-router.post(
-  "/edit-products/:_id",
-  isAuthCheck,
-  adminController.postEditProduct
-);
-router.post(
-  "/edit/:_id",
-  isAuthCheck,
-  [
-    body("name")
-      .isString()
-      .trim()
-      .isLength({ min: 3 })
-      .withMessage("Name must contain alteast 3 characters"),
-    body("price").isFloat().trim(),
-  ],
-  adminController.postEdit
-);
-
+// DELETE A PRODUCT
 router.delete(
   "/delete-product/:productId",
-  isAuthCheck,
+  isLoggedIn,
   adminController.deleteProduct
 );
+
+// GET ALL USERS
+router.get("/all-users", adminController.allUsers);
+
+// CHANGE USER ROLE
+router.patch("/change-role/:userId", adminController.changeUserRole);
 
 module.exports = router;

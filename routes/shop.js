@@ -1,33 +1,33 @@
 const express = require("express");
 const router = express.Router();
-const isAuthCheck = require("../middleware/isAuth");
+const isLoggedIn = require("../middleware/isLoggedIn");
 
 // MY IMPORTS
 const shopController = require("../controllers/shop");
 
-// SHOP PRODUCTS
-router.get("/", shopController.getShop);
-router.get("/products", shopController.getProducts);
+// GET ALL PRODUCTS
+router.get("/all-products", shopController.getAllProducts);
 
-// SINGLE PRODUCT
-router.get("/products/:_id", shopController.getProduct);
+// GET ALL CATEGORIES
+router.get("/all-categories", shopController.getAllCategories);
 
 // ORDERS
-router.get("/orders", isAuthCheck, shopController.getOrders);
-router.post("/orders", isAuthCheck, shopController.postOrders);
-router.get("/orders/:orderId", isAuthCheck, shopController.getInvoice);
+router.post("/orders", isLoggedIn, shopController.postOrders);
+router.get("/orders/:orderId", isLoggedIn, shopController.getInvoice);
 
 // CHECKOUT
 router.get("/checkout", shopController.getCheckout);
 router.get("/checkout-success", shopController.postOrders);
 
 // CART
-router.get("/cart", isAuthCheck, shopController.getCart);
-router.get("/add-to-cart/:_id", isAuthCheck, shopController.postCart);
+router.get("/add-to-cart/:_id", isLoggedIn, shopController.postCart);
 router.post(
   "/remove-from-cart/:_id",
-  isAuthCheck,
+  isLoggedIn,
   shopController.postRemoveCartProduct
 );
+
+// REVIEWS
+router.post("/add-review/:productId", isLoggedIn, shopController.addReview);
 
 module.exports = router;

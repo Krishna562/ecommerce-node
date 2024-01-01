@@ -6,59 +6,14 @@ const path = require("path");
 const stripe = require("stripe")(`${process.env.STRIPE_KEY}`);
 const PRODUCTS_PER_PAGE = 3;
 
-// SHOP
+// GET ALL PRODUCTS
 
-exports.getShop = async (req, res) => {
-  const pageIndex = req.query.page;
+exports.getAllProducts = async (req, res, next) => {
   try {
-    const products = await Product.find()
-      .skip((pageIndex - 1) * PRODUCTS_PER_PAGE)
-      .limit(PRODUCTS_PER_PAGE);
-    const noOfProducts = await Product.find().countDocuments();
-    const noOfPages = Math.ceil(noOfProducts / 3);
-    res.render("shop/index", {
-      pageTitle: "Shop",
-      path: "/",
-      products: products,
-      pageIndex: pageIndex,
-      noOfPages: noOfPages,
-    });
+    const products = await Product.find();
+    res.json({ products });
   } catch (err) {
-    console.log(err);
-  }
-};
-
-// PRODUCTS PAGE
-
-exports.getProducts = async (req, res) => {
-  const pageIndex = req.query.page;
-  const products = await Product.find()
-    .skip((pageIndex - 1) * PRODUCTS_PER_PAGE)
-    .limit(PRODUCTS_PER_PAGE);
-  const noOfProducts = await Product.find().countDocuments();
-  const noOfPages = Math.ceil(noOfProducts / 3);
-  res.render("shop/product-list", {
-    pageTitle: "All Products",
-    path: "/products",
-    products: products,
-    pageIndex: pageIndex,
-    noOfPages: noOfPages,
-  });
-};
-
-// DETAILS PAGE
-
-exports.getProduct = async (req, res) => {
-  const _id = req.params._id;
-  try {
-    const singleProduct = await Product.findById(_id);
-    res.render(`shop/details`, {
-      product: singleProduct,
-      path: `Details`,
-      pageTitle: "Product Details",
-    });
-  } catch (err) {
-    console.log(err);
+    next(err);
   }
 };
 
@@ -96,15 +51,6 @@ exports.getCheckout = (req, res) => {
 };
 
 // ORDERS
-
-exports.getOrders = async (req, res) => {
-  const orders = await Order.find({ "user.userId": req.user._id });
-  res.render("shop/orders", {
-    path: "/orders",
-    pageTitle: "My Orders",
-    orders: orders,
-  });
-};
 
 exports.postOrders = async (req, res) => {
   const { _id } = req.user;
@@ -160,17 +106,6 @@ exports.getInvoice = async (req, res, next) => {
 
 // CART
 
-exports.getCart = (req, res) => {
-  req.user.loadCart(async (cartProducts, totalPrice) => {
-    res.render("shop/cart", {
-      pageTitle: "Cart",
-      path: "/cart",
-      cartProducts: cartProducts,
-      totalPrice: totalPrice,
-    });
-  });
-};
-
 exports.postCart = async (req, res) => {
   const _id = req.params._id;
   await req.user.addToCart(_id);
@@ -181,4 +116,40 @@ exports.postRemoveCartProduct = async (req, res) => {
   const _id = req.params._id;
   await req.user.deleteCartProduct(_id);
   res.redirect("/cart");
+};
+
+// GET ALL CATEGORIES
+
+exports.getAllCategories = async (req, res) => {
+  res.json({
+    categories: [
+      "Phones",
+      "Clothes",
+      "Peripherals",
+      "Sports items",
+      "Footwear",
+      "Accessories",
+    ],
+  });
+};
+
+// ADD REVIEW
+
+exports.addReview = async (req, res) => {
+  const { stars, comment } = req.body;
+  const productId = req.params.productId;
+  const userId = req.session.user._id;
+  try {
+    const product = await Product.findById(productId);
+    const review = {
+      stars,
+      comment,
+      userId,
+    };
+    product.reviews.push(review);
+    product.save();
+    res.json({ newReview: review });
+  } catch (err) {
+    next(err);
+  }
 };
