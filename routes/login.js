@@ -30,6 +30,14 @@ router.post(
         }
       }
     }),
+    body("username").custom(async (input) => {
+      const user = await User.findOne({ username: input });
+      if (user) {
+        throw new Error("Username is taken");
+      } else {
+        return true;
+      }
+    }),
   ],
   loginController.postLogin
 );

@@ -20,11 +20,11 @@ router.get("/checkout", shopController.getCheckout);
 router.get("/checkout-success", shopController.postOrders);
 
 // CART
-router.get("/add-to-cart/:_id", isLoggedIn, shopController.postCart);
-router.post(
-  "/remove-from-cart/:_id",
+router.post("/add-to-cart/:productId", isLoggedIn, shopController.addToCart);
+router.delete(
+  "/remove-from-cart/:productId",
   isLoggedIn,
-  shopController.postRemoveCartProduct
+  shopController.removeFromCart
 );
 
 // REVIEWS

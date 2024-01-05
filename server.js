@@ -41,7 +41,7 @@ const fileStorage = multer.diskStorage({
   },
 });
 
-// test
+// Only accept png, jpg and jpeg image files
 const fileFilter = (req, file, cb) => {
   if (
     file.mimetype === "image/jpg" ||
@@ -83,6 +83,4 @@ app.use((error, req, res, next) => {
   });
 });
 
-mongoose
-  .connect(MONGODBCONNECT_URI)
-  .then(() => app.listen(process.env.PORT || 3000));
+mongoose.connect(MONGODBCONNECT_URI).then(() => app.listen(3000));

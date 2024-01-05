@@ -1,16 +1,16 @@
 const Product = require("../models/product");
+const User = require("../models/user");
 const Order = require("../models/order");
 const PdfDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
 const stripe = require("stripe")(`${process.env.STRIPE_KEY}`);
-const PRODUCTS_PER_PAGE = 3;
 
 // GET ALL PRODUCTS
 
 exports.getAllProducts = async (req, res, next) => {
   try {
-    const products = await Product.find();
+    const products = await Product.find().populate("reviews.userId");
     res.json({ products });
   } catch (err) {
     next(err);
@@ -106,16 +106,60 @@ exports.getInvoice = async (req, res, next) => {
 
 // CART
 
-exports.postCart = async (req, res) => {
-  const _id = req.params._id;
-  await req.user.addToCart(_id);
-  res.redirect("/cart");
+exports.addToCart = async (req, res, next) => {
+  const productId = req.params.productId;
+  try {
+    const user = await User.findById(req.userId);
+    const cartProduct = user.cart.find((item) =>
+      item.productId.equals(productId)
+    );
+    const newProduct = {
+      productId: productId,
+      qty: cartProduct ? cartProduct.qty + 1 : 1,
+    };
+    const updatedCartItems = cartProduct
+      ? user.cart.map((item) =>
+          item.productId === cartProduct.productId ? newProduct : item
+        )
+      : [...user.cart, newProduct];
+    user.cart = updatedCartItems;
+    await user.save();
+
+    const populatedCartProds = await User.findById(req.userId).populate(
+      "cart.productId"
+    );
+    const totalPrice = populatedCartProds.cart.reduce((acc, curr) => {
+      acc + curr.productId.price * curr.qty;
+      return acc;
+    }, 0);
+
+    res.json({ updatedCartProducts: populatedCartProds, totalPrice });
+  } catch (err) {
+    next(err);
+  }
 };
 
-exports.postRemoveCartProduct = async (req, res) => {
-  const _id = req.params._id;
-  await req.user.deleteCartProduct(_id);
-  res.redirect("/cart");
+exports.removeFromCart = async (req, res, next) => {
+  const productId = req.params.productId;
+  try {
+    const user = await User.findById(req.userId);
+    const updatedCartItems = user.cart.filter(
+      (cartProd) => !cartProd.productId.equals(productId)
+    );
+    user.cart = updatedCartItems;
+    await user.save();
+
+    const populatedCartProds = await User.findById(req.userId).populate(
+      "cart.productId"
+    );
+    const totalPrice = populatedCartProds.cart.reduce((acc, curr) => {
+      acc + curr.productId.price * curr.qty;
+      return acc;
+    }, 0);
+    res.json({ updatedCartProducts: populatedCartProds, totalPrice });
+  } catch (err) {
+    next(err);
+  }
 };
 
 // GET ALL CATEGORIES
@@ -138,7 +182,7 @@ exports.getAllCategories = async (req, res) => {
 exports.addReview = async (req, res) => {
   const { stars, comment } = req.body;
   const productId = req.params.productId;
-  const userId = req.session.user._id;
+  const userId = req.userId;
   try {
     const product = await Product.findById(productId);
     const review = {
@@ -147,8 +191,10 @@ exports.addReview = async (req, res) => {
       userId,
     };
     product.reviews.push(review);
-    product.save();
-    res.json({ newReview: review });
+    await product.save();
+
+    const products = await Product.find().populate("reviews.userId");
+    res.json({ updatedProducts: products });
   } catch (err) {
     next(err);
   }

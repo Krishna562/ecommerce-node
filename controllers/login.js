@@ -15,7 +15,7 @@ const transport = nodemailer.createTransport({
 
 exports.checkAuthStatus = async (req, res, next) => {
   try {
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.userId).populate("cart.productId");
     res.json({ currentUser: user, isLoggedIn: true });
   } catch (err) {
     next(err);
@@ -55,7 +55,7 @@ exports.postLogout = (req, res) => {
 };
 
 exports.postSignUp = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, username } = req.body;
   const errors = validationResult(req).array();
   if (errors.length) {
     res.status(401).json({ errorsArr: errors });
@@ -87,6 +87,7 @@ exports.postSignUp = async (req, res) => {
       password: encryptedPassword,
       cart: { items: [] },
       dateJoined: completeCurrentDate,
+      username: username,
     });
     await newUser.save();
     res.status(201).json({ message: "Signup successful" });
