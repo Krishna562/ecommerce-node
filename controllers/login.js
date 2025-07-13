@@ -15,7 +15,7 @@ const transport = nodemailer.createTransport({
 
 exports.checkAuthStatus = async (req, res, next) => {
   try {
-    const user = await User.findById(req.userId).populate("cart.productId");
+    const user = await User.findById(req.userId);
     res.json({ currentUser: user, isLoggedIn: true });
   } catch (err) {
     next(err);

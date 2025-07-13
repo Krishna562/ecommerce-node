@@ -104,72 +104,13 @@ exports.getInvoice = async (req, res, next) => {
   }
 };
 
-// CART
-
-exports.addToCart = async (req, res, next) => {
-  const productId = req.params.productId;
-  try {
-    const user = await User.findById(req.userId);
-    const cartProduct = user.cart.find((item) =>
-      item.productId.equals(productId)
-    );
-    const newProduct = {
-      productId: productId,
-      qty: cartProduct ? cartProduct.qty + 1 : 1,
-    };
-    const updatedCartItems = cartProduct
-      ? user.cart.map((item) =>
-          item.productId === cartProduct.productId ? newProduct : item
-        )
-      : [...user.cart, newProduct];
-    user.cart = updatedCartItems;
-    await user.save();
-
-    const populatedCartProds = await User.findById(req.userId).populate(
-      "cart.productId"
-    );
-    const totalPrice = populatedCartProds.cart.reduce((acc, curr) => {
-      acc + curr.productId.price * curr.qty;
-      return acc;
-    }, 0);
-
-    res.json({ updatedCartProducts: populatedCartProds, totalPrice });
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.removeFromCart = async (req, res, next) => {
-  const productId = req.params.productId;
-  try {
-    const user = await User.findById(req.userId);
-    const updatedCartItems = user.cart.filter(
-      (cartProd) => !cartProd.productId.equals(productId)
-    );
-    user.cart = updatedCartItems;
-    await user.save();
-
-    const populatedCartProds = await User.findById(req.userId).populate(
-      "cart.productId"
-    );
-    const totalPrice = populatedCartProds.cart.reduce((acc, curr) => {
-      acc + curr.productId.price * curr.qty;
-      return acc;
-    }, 0);
-    res.json({ updatedCartProducts: populatedCartProds, totalPrice });
-  } catch (err) {
-    next(err);
-  }
-};
-
 // GET ALL CATEGORIES
 
 exports.getAllCategories = async (req, res) => {
   res.json({
     categories: [
-      "Phones",
+      "Electronics",
       "Clothes",
-      "Peripherals",
       "Sports items",
       "Footwear",
       "Accessories",

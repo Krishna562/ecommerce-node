@@ -25,15 +25,6 @@ const userSchema = new Schema({
   },
   resetToken: { type: String, required: false },
   tokenExpiration: { type: Date, required: false },
-  cart: [
-    {
-      productId: {
-        type: Schema.Types.ObjectId,
-        ref: "Product",
-      },
-      qty: Number,
-    },
-  ],
 });
 
 module.exports = new model("User", userSchema);

@@ -19,14 +19,6 @@ router.get("/orders/:orderId", isLoggedIn, shopController.getInvoice);
 router.get("/checkout", shopController.getCheckout);
 router.get("/checkout-success", shopController.postOrders);
 
-// CART
-router.post("/add-to-cart/:productId", isLoggedIn, shopController.addToCart);
-router.delete(
-  "/remove-from-cart/:productId",
-  isLoggedIn,
-  shopController.removeFromCart
-);
-
 // REVIEWS
 router.post("/add-review/:productId", isLoggedIn, shopController.addReview);
 
